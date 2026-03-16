@@ -1,0 +1,11 @@
+# Example Dockerfile for a simple static web app
+# To use this, copy it to Dockerfile and build the image.
+
+FROM nginx:stable-alpine
+
+# Copy static site files into nginx html directory
+COPY myapp /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

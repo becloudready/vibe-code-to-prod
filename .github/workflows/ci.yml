@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Validate & Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js (for tooling)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run tests script
+        run: |
+          chmod +x ./scripts/run-tests.sh
+          ./scripts/run-tests.sh
