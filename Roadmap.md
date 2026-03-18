@@ -4,10 +4,15 @@
 Theme: **Build Fast. Ship Clean. Feel the Vibe.**
 
 Build and deploy a modern full-stack portfolio app using **Tech Stack**
+
 Backend: **Java, Spring Boot, concepts related to API/RestAPI, MVC**,
+
 Frontend: **React** 
+
 Database: **SQL, MySql, MySqlWorkbench IDE**
+
 Devops: Git, GitHub, concepts related to CI-CD pipelines(Github Actions), Dockerisation
+
 Deployment: Free/Open-source providers like Vercel
 
 ---
