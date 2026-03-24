@@ -1,0 +1,16 @@
+# Test your Flask User API with these curl commands:
+
+# Create a user
+# curl -X POST http://127.0.0.1:5000/users -H "Content-Type: application/json" -d "{\"name\": \"Alice\", \"age\": 30, \"username\": \"alice1\", \"password\": \"pass123\"}"
+
+# Get all users
+# curl http://127.0.0.1:5000/users
+
+# Get a single user (replace 1 with user id)
+# curl http://127.0.0.1:5000/users/1
+
+# Update a user (replace 1 with user id)
+# curl -X PUT http://127.0.0.1:5000/users/1 -H "Content-Type: application/json" -d "{\"name\": \"Alice Updated\"}"
+
+# Delete a user (replace 1 with user id)
+# curl -X DELETE http://127.0.0.1:5000/users/1
