@@ -2,7 +2,7 @@
 
 ## Overview
 
-This chapter covers the concepts and hands-on skills needed to provision cloud infrastructure and automate deployments. Students will launch a real EC2 instance, deploy a web server manually, and then automate the same deployment using GitHub Actions.
+This chapter covers the concepts and hands-on skills needed to provision cloud infrastructure, automate deployments, and build serverless APIs. Students will launch a real EC2 instance, deploy a web server with GitHub Actions, trigger Lambda functions from S3 events, and expose a Lambda function as a REST API using API Gateway.
 
 ---
 
@@ -12,26 +12,8 @@ This chapter covers the concepts and hands-on skills needed to provision cloud i
 |------|-------------|
 | [Lab — Deploy to EC2 with CI/CD](./Lab-Deploy-EC2-CICD.md) | End-to-end lab: launch EC2 with Terraform, deploy nginx with a shell script, then automate with GitHub Actions |
 | [Lab — Lambda S3 Trigger](./Lab-Lambda-S3-Trigger.md) | Serverless lab: create an S3 bucket, trigger a Lambda function on file upload, view logs in CloudWatch |
+| [Lab — Lambda REST API](./Lab-Lambda-REST-API.md) | Serverless API lab: expose a Lambda function as a REST API using API Gateway with GET and POST endpoints |
 
----
-
-## Folder Structure
-
-```
-Chapter-6/
-├── Lab-Deploy-EC2-CICD.md         ← lab instructions
-├── ec2-setup.sh                   ← shell script to install nginx
-├── IAM-Student-Policies.md        ← AWS IAM policies for student accounts
-├── hello-cicd/                    ← sample GitHub repo for the CI/CD lab
-│   ├── index.html
-│   └── .github/workflows/
-│       └── deploy.yml
-└── terraform-ec2/                 ← Terraform to launch EC2
-    ├── main.tf
-    ├── variables.tf
-    ├── outputs.tf
-    └── ssh-keys/                  ← generated private key (git ignored)
-```
 
 ---
 
