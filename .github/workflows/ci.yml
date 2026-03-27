@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ cicd-prod ]
+    branches: [ rohit-cicd-demo ]
   pull_request:
-    branches: [ cicd-prod ]
+    branches: [ rohit-cicd-demo ]
 
 jobs:
   lint:
