@@ -8,16 +8,29 @@ Follow these steps to run and test the full stack application (Backend: Flask AP
 
 ### Prerequisites
 - Python 3.14+
-- Flask and dependencies installed globally (use `pip install flask` if needed).
+- Flask, Flask-CORS, and PyMongo installed globally (see requirements.txt).
+- A MongoDB Atlas account and cluster set up.
 
 ### Steps
+
 
 1. Open a terminal and navigate to the backend folder:
    ```sh
    cd Backend/Python/flask-api
    ```
 
-2. Run the Flask app:
+2. Install backend dependencies:
+   ```sh
+   pip install -r requirements.txt
+   ```
+
+3. Set your MongoDB Atlas connection string in `config.py`:
+   ```python
+   MONGODB_URI = "your-mongodb-atlas-uri"
+   DB_NAME = "your-db-name"
+   ```
+
+4. Run the Flask app:
    ```sh
    python app.py
    ```

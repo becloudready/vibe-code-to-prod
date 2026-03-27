@@ -6,25 +6,34 @@ import './RegistrationLogin.css';
 const RegistrationLogin = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ name: '', age: '', username: '', password: '' });
   const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-    if (users[form.username]) {
-      setMessage('User already exists!');
+    setMessage('');
+    // Validate required fields
+    if (!form.name || !form.age || !form.username || !form.password) {
+      setMessage('All fields are required!');
       return;
     }
-    users[form.username] = form.password;
-    localStorage.setItem('users', JSON.stringify(users));
-    setMessage('Registration successful! Please login.');
-    setIsLogin(true);
-    setForm({ username: '', password: '' });
+    const result = await dataService.register({
+      name: form.name,
+      age: Number(form.age),
+      username: form.username,
+      password: form.password
+    });
+    if (result.success) {
+      setMessage('Registration successful! Please login.');
+      setIsLogin(true);
+      setForm({ name: '', age: '', username: '', password: '' });
+    } else {
+      setMessage(result.message || 'Registration failed!');
+    }
   };
 
   const handleLogin = async (e) => {
@@ -50,6 +59,26 @@ const RegistrationLogin = () => {
     <div className="auth-container">
       <h2>{isLogin ? 'Login' : 'Register'}</h2>
       <form onSubmit={isLogin ? handleLogin : handleRegister}>
+        {!isLogin && (
+          <>
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="number"
+              name="age"
+              placeholder="Age"
+              value={form.age}
+              onChange={handleChange}
+              required
+            />
+          </>
+        )}
         <input
           type="text"
           name="username"
@@ -68,7 +97,7 @@ const RegistrationLogin = () => {
         />
         <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
       </form>
-      <button onClick={() => { setIsLogin(!isLogin); setMessage(''); setForm({ username: '', password: '' }); }}>
+      <button onClick={() => { setIsLogin(!isLogin); setMessage(''); setForm({ name: '', age: '', username: '', password: '' }); }}>
         {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
       </button>
       {message && <p>{message}</p>}
