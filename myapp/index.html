@@ -1,65 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Capstone Project Home</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="page-header">
-    <h1>Capstone Project Dashboard | Update2</h1>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Capstone Project Home</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Capstone Project Dashboard | Update2</h1>
+    </header>
 
-  <main class="content">
-    <section class="card">
-      <h2>Project Info</h2>
-      <div class="placeholder">
-        <strong>Group Number:</strong>
-        <span id="group-number">[GroupNumber]</span>
-      </div>
-      <div class="placeholder">
-        <strong>Project Title:</strong>
-        <span id="project-title">[ProjectTitle]</span>
-      </div>
-      <div class="placeholder">
-        <strong>Group Members:</strong>
-        <span id="group-members">[Group Members]</span>
-      </div>
-    </section>
+    <main class="content">
+      <section class="card">
+        <h2>Project Info</h2>
+        <div class="placeholder">
+          <strong>Group Number:</strong>
+          <span id="group-number">[GroupNumber]</span>
+        </div>
+        <div class="placeholder">
+          <strong>Project Title:</strong>
+          <span id="project-title">[ProjectTitle]</span>
+        </div>
+        <div class="placeholder">
+          <strong>Group Members:</strong>
+          <span id="group-members">[Group Members]</span>
+        </div>
+      </section>
 
-    <section class="card">
-      <h2>Update placeholders</h2>
-      <p>Use the form below to update the values shown above.</p>
+      <section class="card">
+        <h2>Update placeholders</h2>
+        <p>Use the form below to update the values shown above.</p>
 
-      <form id="project-form">
-        <label>
-          Group Number
-          <input type="text" id="input-group-number" placeholder="e.g. 5" />
-        </label>
+        <form id="project-form">
+          <label>
+            Group Number
+            <input type="text" id="input-group-number" placeholder="e.g. 5" />
+          </label>
 
-        <label>
-          Project Title
-          <input type="text" id="input-project-title" placeholder="e.g. CI/CD Dashboard" />
-        </label>
+          <label>
+            Project Title
+            <input
+              type="text"
+              id="input-project-title"
+              placeholder="e.g. CI/CD Dashboard"
+            />
+          </label>
 
-        <label>
-          Group Members
-          <input type="text" id="input-group-members" placeholder="e.g. Alice, Bob, Carol" />
-        </label>
+          <label>
+            Group Members
+            <input
+              type="text"
+              id="input-group-members"
+              placeholder="e.g. Alice, Bob, Carol"
+            />
+          </label>
 
-        <button type="submit">Save</button>
-      </form>
+          <button type="submit">Save</button>
+        </form>
 
-      <p class="hint">Tip: Values persist for this session.</p>
-    </section>
-  </main>
+        <p class="hint">Tip: Values persist for this session.</p>
+      </section>
+    </main>
 
-  <footer class="page-footer">
-    <p>Built for CI/CD Concepts & Capstone Project Integration</p>
-    <p>Today's date: March 27, 2026</p>
-  </footer>
+    <footer class="page-footer">
+      <p>Built for CI/CD Concepts & Capstone Project Integration</p>
+      <!--<p>Today's date: March 27, 2026</p>-->
+    </footer>
 
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
