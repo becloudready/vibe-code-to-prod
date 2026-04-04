@@ -290,7 +290,7 @@ Add student IAM users to that group.
         "lambda:UntagResource",
         "lambda:ListTags"
       ],
-      "Resource": "arn:aws:lambda:us-east-1:YOUR_ACCOUNT_ID:function:student-*"
+      "Resource": "arn:aws:lambda:*:YOUR_ACCOUNT_ID:function:student-*"
     },
     {
       "Sid": "LambdaListAll",
@@ -309,7 +309,7 @@ Add student IAM users to that group.
         "lambda:RemovePermission",
         "lambda:GetPolicy"
       ],
-      "Resource": "arn:aws:lambda:us-east-1:YOUR_ACCOUNT_ID:function:student-*"
+      "Resource": "arn:aws:lambda:*:YOUR_ACCOUNT_ID:function:student-*"
     },
     {
       "Sid": "LambdaWaitForUpdate",
@@ -319,7 +319,7 @@ Add student IAM users to that group.
         "lambda:ListFunctionEventInvokeConfigs",
         "lambda:GetRuntimeManagementConfig"
       ],
-      "Resource": "arn:aws:lambda:us-east-1:YOUR_ACCOUNT_ID:function:student-*"
+      "Resource": "arn:aws:lambda:*:YOUR_ACCOUNT_ID:function:student-*"
     }
   ]
 }
