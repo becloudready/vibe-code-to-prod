@@ -1,0 +1,44 @@
+.app-shell {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+}
+
+.todo-item.completed span {
+  text-decoration: line-through;
+  color: #666;
+}
+
+.todo-filter button {
+  margin-right: 0.5rem;
+}
+
+.todo-filter .active {
+  font-weight: bold;
+}

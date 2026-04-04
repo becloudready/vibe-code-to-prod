@@ -1,0 +1,51 @@
+.app-shell {
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+nav {
+  margin-bottom: 1rem;
+}
+
+nav a {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #007acc;
+}
+
+.employee-list {
+  list-style: none;
+  padding: 0;
+}
+
+.employee-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.employee-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.employee-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+.employee-form label {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-form input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

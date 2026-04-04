@@ -2,16 +2,47 @@
 
 This guide covers creating a new React app frontend for an Employee Management Application with CRUD operations, component nesting, props, hooks, and routing.
 
-## 1) Setup: Create the project
+## Student Goal
 
-1. Open PowerShell in `Chapter-7React`.
+Build an Employee Dashboard frontend in React that allows users to:
+- view a list of employees,
+- add new employee records,
+- edit existing employee details,
+- delete employees,
+- navigate between pages using routing.
+
+The app should demonstrate state management, reusable components, API interaction, and navigation.
+
+## Plan / Steps / Hints
+
+1. Create a React app using Vite or Create React App.
+   - Hint: `npx create-react-app employee-management-frontend`.
+2. Define a project folder structure for pages, components, and services.
+   - Hint: keep API logic separate in `src/services/api.js`.
+3. Install React Router for navigation and Axios for API requests.
+   - Hint: `npm install react-router-dom@6 axios`.
+4. Build the API service layer first with methods for list, get, create, update, and delete.
+   - Hint: use `axios.create({ baseURL: ... })`.
+5. Configure routing in `src/App.jsx` for home, add, and edit pages.
+   - Hint: use `Routes` and `Route` from React Router DOM.
+6. Create the home page with `useEffect` to fetch employees and render them with a list component.
+7. Build reusable form and list components to keep the UI modular.
+8. Use callback props to let child components notify parents about delete actions.
+9. Use `useNavigate` to return to the home page after create or update operations.
+10. Test the workflow by creating, editing, and deleting employee records.
+
+## Step-by-step Solution
+
+### 1) Setup: Create the project
+
+1. Open PowerShell in the workspace folder.
 2. Run:
    - `npx create-react-app employee-management-frontend`
    - `cd employee-management-frontend`
-3. Start dev server:
+3. Start the dev server:
    - `npm start`
 
-## 2) Project structure (recommended)
+### 2) Project structure (recommended)
 
 - `src/components/`
   - `EmployeeList.jsx`
@@ -27,14 +58,14 @@ This guide covers creating a new React app frontend for an Employee Management A
 - `src/App.jsx`
 - `src/index.js`
 
-## 3) Add dependencies
+### 3) Add dependencies
 
 - React Router DOM for routing:
   - `npm install react-router-dom@6`
 - Optional UI library:
   - `npm install axios` (for API calls)
 
-## 4) Create simple data API service
+### 4) Create simple data API service
 
 `src/services/api.js`:
 
@@ -48,7 +79,7 @@ export const updateEmployee = (id, employee) => API.put(`/${id}`, employee);
 export const deleteEmployee = (id) => API.delete(`/${id}`);
 ```
 
-## 5) Configure routing in `src/App.jsx`
+### 5) Configure routing in `src/App.jsx`
 
 ```js
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
@@ -73,9 +104,9 @@ function App() {
 export default App;
 ```
 
-## 6) HomePage and CRUD components
+### 6) HomePage and CRUD components
 
-### HomePage (state + useEffect + API fetch)
+#### HomePage (state + useEffect + API fetch)
 
 `src/pages/HomePage.jsx`:
 
@@ -115,7 +146,7 @@ function HomePage() {
 export default HomePage;
 ```
 
-### EmployeeList (component nesting + props)
+#### EmployeeList (component nesting + props)
 
 `src/components/EmployeeList.jsx`:
 
@@ -135,7 +166,7 @@ function EmployeeList({ employees, onDelete }) {
 export default EmployeeList;
 ```
 
-### EmployeeCard (props, callbacks)
+#### EmployeeCard (props, callbacks)
 
 `src/components/EmployeeCard.jsx`:
 
@@ -157,9 +188,9 @@ function EmployeeCard({ employee, onDelete }) {
 export default EmployeeCard;
 ```
 
-## 7) Add/Edit employee forms
+### 7) Add/Edit employee forms
 
-### EmployeeForm reusable
+#### EmployeeForm reusable
 
 `src/components/EmployeeForm.jsx`:
 
@@ -194,7 +225,7 @@ function EmployeeForm({ initialValues = { name: '', role: '', email: '' }, onSub
 export default EmployeeForm;
 ```
 
-### AddEmployeePage
+#### AddEmployeePage
 
 `src/pages/AddEmployeePage.jsx`:
 
@@ -222,7 +253,7 @@ function AddEmployeePage() {
 export default AddEmployeePage;
 ```
 
-### EditEmployeePage
+#### EditEmployeePage
 
 `src/pages/EditEmployeePage.jsx`:
 
