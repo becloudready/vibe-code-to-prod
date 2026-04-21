@@ -86,7 +86,7 @@ export default function FeaturesSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 tracking-tight mb-4">
             Everything you need.<br />
-            <span className="gradient-text-warm">Nothing you don't.</span>
+            <span className="gradient-text-warm">Nothing you don&apos;t.</span>
           </h2>
           <p className="text-zinc-500 text-lg max-w-xl mx-auto">
             Simple functionality built on production-grade AWS infrastructure.

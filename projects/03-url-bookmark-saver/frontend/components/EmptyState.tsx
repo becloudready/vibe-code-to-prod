@@ -9,7 +9,7 @@ export default function EmptyState() {
       </div>
       <p className="font-semibold text-zinc-700 mb-1.5">No bookmarks yet</p>
       <p className="text-sm text-zinc-400 max-w-xs">
-        Save your first URL above — it'll appear here instantly.
+        Save your first URL above — it&apos;ll appear here instantly.
       </p>
     </div>
   );
