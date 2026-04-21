@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+.envrc
+.direnv/
 *.secret
 *.secrets
 *.pem
@@ -10,6 +12,7 @@
 *.pfx
 *.crt
 *.cer
+*.ovpn
 credentials
 .aws/
 ssh-keys/
@@ -19,10 +22,18 @@ ssh-keys/
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
 terraform.tfvars
+terraform.tfvars.json
 *.auto.tfvars
+*.auto.tfvars.json
 override.tf
 override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.tfstate.lock.info
+crash.log
 
 # ─── Node / JavaScript ───────────────────────────────────────────────────────
 node_modules/

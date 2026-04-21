@@ -1,0 +1,68 @@
+import type { Template } from '@/types';
+
+export const TEMPLATES: Template[] = [
+  {
+    id: 'serverless-api',
+    name: 'Serverless REST API',
+    description: 'Classic AWS serverless stack',
+    emoji: '⚡',
+    input: 'Browser → API Gateway → Lambda → DynamoDB\nLambda → CloudWatch',
+    tags: ['Lambda', 'DynamoDB', 'API Gateway'],
+  },
+  {
+    id: 'jamstack',
+    name: 'JAMStack App',
+    description: 'Static frontend + serverless API',
+    emoji: '🌐',
+    input: 'Browser → CloudFront → S3\nBrowser → API Gateway → Lambda → DynamoDB',
+    tags: ['S3', 'CloudFront', 'Lambda'],
+  },
+  {
+    id: 'auth-api',
+    name: 'Auth + API',
+    description: 'Cognito-protected REST API',
+    emoji: '🔐',
+    input: 'Browser → Cognito → API Gateway → Lambda → RDS\nLambda → CloudWatch',
+    tags: ['Cognito', 'Lambda', 'RDS'],
+  },
+  {
+    id: 'cicd',
+    name: 'CI/CD Pipeline',
+    description: 'Automated build and deploy to ECS',
+    emoji: '🚀',
+    input: 'GitHub → CodePipeline → CodeBuild → ECR → ECS\nECS → CloudWatch',
+    tags: ['GitHub', 'ECS', 'CodeBuild'],
+  },
+  {
+    id: 'event-driven',
+    name: 'Event-Driven',
+    description: 'Async processing with SQS',
+    emoji: '📨',
+    input: 'Browser → API Gateway → Lambda → SQS → Lambda → DynamoDB\nLambda → SNS',
+    tags: ['SQS', 'SNS', 'Lambda'],
+  },
+  {
+    id: 'ai-app',
+    name: 'AI Application',
+    description: 'LLM-powered serverless app',
+    emoji: '🤖',
+    input: 'Browser → API Gateway → Lambda → Bedrock\nLambda → DynamoDB\nLambda → CloudWatch',
+    tags: ['Bedrock', 'Lambda', 'DynamoDB'],
+  },
+  {
+    id: 'microservices',
+    name: 'Microservices',
+    description: 'Container-based services behind ALB',
+    emoji: '🔧',
+    input: 'Browser → ALB → ECS → DynamoDB\nECS → ElastiCache\nECS → CloudWatch',
+    tags: ['ECS', 'ALB', 'ElastiCache'],
+  },
+  {
+    id: 'data-pipeline',
+    name: 'Data Pipeline',
+    description: 'Streaming data ingestion',
+    emoji: '📊',
+    input: 'Mobile → API Gateway → Lambda → Kinesis → Lambda → DynamoDB\nLambda → CloudWatch',
+    tags: ['Kinesis', 'Lambda', 'DynamoDB'],
+  },
+];

@@ -129,13 +129,13 @@ resource "aws_apigatewayv2_stage" "default" {
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.apigw.arn
     format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      routeKey       = "$context.routeKey"
-      status         = "$context.status"
-      responseLength = "$context.responseLength"
+      requestId          = "$context.requestId"
+      ip                 = "$context.identity.sourceIp"
+      requestTime        = "$context.requestTime"
+      httpMethod         = "$context.httpMethod"
+      routeKey           = "$context.routeKey"
+      status             = "$context.status"
+      responseLength     = "$context.responseLength"
       integrationLatency = "$context.integrationLatency"
     })
   }
@@ -144,6 +144,54 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_cloudwatch_log_group" "apigw" {
   name              = "/aws/apigateway/${local.prefix}"
   retention_in_days = var.log_retention_days
+}
+
+resource "aws_cloudwatch_log_metric_filter" "bookmark_created" {
+  name           = "${local.prefix}-bookmark-created"
+  log_group_name = aws_cloudwatch_log_group.lambda.name
+  pattern        = "{ $.message = \"Bookmark created\" }"
+
+  metric_transformation {
+    name      = "BookmarkCreatedCount"
+    namespace = "StashApp/${local.prefix}"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "bookmark_deleted" {
+  name           = "${local.prefix}-bookmark-deleted"
+  log_group_name = aws_cloudwatch_log_group.lambda.name
+  pattern        = "{ $.message = \"Bookmark deleted\" }"
+
+  metric_transformation {
+    name      = "BookmarkDeletedCount"
+    namespace = "StashApp/${local.prefix}"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "bookmark_fetch" {
+  name           = "${local.prefix}-bookmark-fetch"
+  log_group_name = aws_cloudwatch_log_group.lambda.name
+  pattern        = "{ $.message = \"Bookmarks fetched\" }"
+
+  metric_transformation {
+    name      = "BookmarkFetchCount"
+    namespace = "StashApp/${local.prefix}"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "lambda_unhandled_error" {
+  name           = "${local.prefix}-lambda-unhandled-error"
+  log_group_name = aws_cloudwatch_log_group.lambda.name
+  pattern        = "{ $.message = \"Unhandled error\" }"
+
+  metric_transformation {
+    name      = "UnhandledErrorCount"
+    namespace = "StashApp/${local.prefix}"
+    value     = "1"
+  }
 }
 
 resource "aws_lambda_permission" "apigw" {
@@ -200,6 +248,69 @@ resource "aws_cloudwatch_dashboard" "stash" {
         type   = "metric"
         x      = 0
         y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title   = "API Requests"
+          metrics = [["AWS/ApiGateway", "Count", "ApiId", aws_apigatewayv2_api.api.id]]
+          period  = 300
+          stat    = "Sum"
+          view    = "singleValue"
+          region  = var.aws_region
+        }
+      },
+      {
+        type   = "metric"
+        x      = 6
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title   = "Bookmarks Created"
+          metrics = [["StashApp/${local.prefix}", "BookmarkCreatedCount"]]
+          period  = 300
+          stat    = "Sum"
+          view    = "singleValue"
+          region  = var.aws_region
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title   = "Bookmarks Deleted"
+          metrics = [["StashApp/${local.prefix}", "BookmarkDeletedCount"]]
+          period  = 300
+          stat    = "Sum"
+          view    = "singleValue"
+          region  = var.aws_region
+        }
+      },
+      {
+        type   = "metric"
+        x      = 18
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title = "HTTP Error Mix"
+          metrics = [
+            ["AWS/ApiGateway", "4xxError", "ApiId", aws_apigatewayv2_api.api.id, { label = "4XX", color = "#ff9900" }],
+            [".", "5xxError", ".", ".", { label = "5XX", color = "#d13212" }]
+          ]
+          period = 300
+          stat   = "Sum"
+          view   = "singleValue"
+          region = var.aws_region
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
         width  = 12
         height = 6
         properties = {
@@ -214,7 +325,7 @@ resource "aws_cloudwatch_dashboard" "stash" {
       {
         type   = "metric"
         x      = 12
-        y      = 0
+        y      = 6
         width  = 12
         height = 6
         properties = {
@@ -230,7 +341,7 @@ resource "aws_cloudwatch_dashboard" "stash" {
       {
         type   = "metric"
         x      = 0
-        y      = 6
+        y      = 12
         width  = 12
         height = 6
         properties = {
@@ -245,7 +356,7 @@ resource "aws_cloudwatch_dashboard" "stash" {
       {
         type   = "metric"
         x      = 12
-        y      = 6
+        y      = 12
         width  = 12
         height = 6
         properties = {
@@ -260,7 +371,7 @@ resource "aws_cloudwatch_dashboard" "stash" {
       {
         type   = "metric"
         x      = 0
-        y      = 12
+        y      = 18
         width  = 12
         height = 6
         properties = {
@@ -276,7 +387,7 @@ resource "aws_cloudwatch_dashboard" "stash" {
       {
         type   = "metric"
         x      = 12
-        y      = 12
+        y      = 18
         width  = 12
         height = 6
         properties = {
@@ -287,6 +398,60 @@ resource "aws_cloudwatch_dashboard" "stash" {
           view    = "timeSeries"
           region  = var.aws_region
           color   = "#d13212"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 24
+        width  = 12
+        height = 6
+        properties = {
+          title = "Bookmark Activity"
+          metrics = [
+            ["StashApp/${local.prefix}", "BookmarkCreatedCount", { label = "Created", color = "#1f77b4" }],
+            [".", "BookmarkDeletedCount", { label = "Deleted", color = "#d62728" }],
+            [".", "BookmarkFetchCount", { label = "Fetched", color = "#2ca02c" }]
+          ]
+          period  = 300
+          stat    = "Sum"
+          view    = "timeSeries"
+          stacked = false
+          region  = var.aws_region
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 24
+        width  = 12
+        height = 6
+        properties = {
+          title = "DynamoDB Activity"
+          metrics = [
+            ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", aws_dynamodb_table.bookmarks.name, { label = "Writes" }],
+            [".", "ConsumedReadCapacityUnits", ".", ".", { label = "Reads" }],
+            [".", "SuccessfulRequestLatency", ".", ".", "Operation", "PutItem", { label = "PutItem Latency", yAxis = "right" }],
+            [".", "SuccessfulRequestLatency", ".", ".", "Operation", "Scan", { label = "Scan Latency", yAxis = "right" }]
+          ]
+          period = 300
+          stat   = "Sum"
+          view   = "timeSeries"
+          region = var.aws_region
+        }
+      },
+      {
+        type   = "log"
+        x      = 0
+        y      = 30
+        width  = 24
+        height = 6
+        properties = {
+          title         = "Recent Lambda Events"
+          region        = var.aws_region
+          view          = "table"
+          logGroupNames = [aws_cloudwatch_log_group.lambda.name]
+          query         = "fields @timestamp, level, message, method, path, id, count, durationMs\n| sort @timestamp desc\n| limit 20"
         }
       }
     ]

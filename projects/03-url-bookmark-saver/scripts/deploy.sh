@@ -29,6 +29,9 @@ hr()   { echo -e "\n${BOLD}━━━━━━━━━━━━━━━━━�
 # ── Inputs ────────────────────────────────────────────────────
 AWS_REGION="${AWS_REGION:-us-east-1}"
 STUDENT_NAME="${STUDENT_NAME:-}"
+CI_MODE="${CI:-false}"
+SEED_DEMO_DATA="${SEED_DEMO_DATA:-false}"
+DEMO_SEED_COUNT="${DEMO_SEED_COUNT:-18}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -37,6 +40,10 @@ while [[ $# -gt 0 ]]; do
     *) die "Unknown argument: $1  Usage: bash deploy.sh --name john-smith [--region us-east-1]" ;;
   esac
 done
+
+if [ -z "$STUDENT_NAME" ] && [ "$CI_MODE" = "true" ]; then
+  die "STUDENT_NAME must be set in CI. Example: STUDENT_NAME=john-smith bash scripts/deploy.sh"
+fi
 
 if [ -z "$STUDENT_NAME" ]; then
   echo ""
@@ -64,7 +71,7 @@ ok "AWS account: $AWS_ACCOUNT  (region: $AWS_REGION)"
 
 # ── Step 2: Package Lambda ────────────────────────────────────
 log "Installing backend dependencies..."
-(cd "$BACKEND_DIR" && npm install --production --silent)
+(cd "$BACKEND_DIR" && npm ci --omit=dev --silent)
 ok "node_modules ready"
 
 log "Building lambda.zip..."
@@ -98,7 +105,7 @@ ok "Frontend : $FRONTEND_URL"
 
 # ── Step 5: Build Next.js frontend ───────────────────────────
 log "Installing frontend dependencies..."
-(cd "$FRONTEND_DIR" && npm install --silent)
+(cd "$FRONTEND_DIR" && npm ci --silent)
 ok "Frontend packages ready"
 
 log "Building Next.js (static export)..."
@@ -150,7 +157,17 @@ else
   warn "POST /bookmarks  →  HTTP $POST_STATUS"
 fi
 
-# ── Step 8: Resource details ──────────────────────────────────
+# ── Step 8: Optional demo data seed ───────────────────────────
+if [ "$SEED_DEMO_DATA" = "true" ]; then
+  log "Seeding demo traffic and sample bookmarks..."
+  bash "$SCRIPT_DIR/demo-load.sh" \
+    --api-url "$API_URL" \
+    --count "$DEMO_SEED_COUNT" \
+    --include-errors
+  ok "Demo seed complete"
+fi
+
+# ── Step 9: Resource details ──────────────────────────────────
 log "Fetching deployed resource details..."
 
 LAMBDA_JSON=$(aws lambda get-function-configuration \
@@ -202,6 +219,6 @@ echo -e "  ${YELLOW}To tear down:  bash $SCRIPT_DIR/destroy.sh --name $STUDENT_N
 echo ""
 
 # Try to open frontend in browser (macOS)
-if command -v open &>/dev/null; then
+if [ "$CI_MODE" != "true" ] && command -v open &>/dev/null; then
   open "$FRONTEND_URL" 2>/dev/null && echo "  (Opened in browser)" || true
 fi

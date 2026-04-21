@@ -16,9 +16,9 @@ provider "aws" {
   region = var.aws_region
   default_tags {
     tags = {
-      Project     = "stash"
-      Student     = var.student_name
-      ManagedBy   = "terraform"
+      Project   = "stash"
+      Student   = var.student_name
+      ManagedBy = "terraform"
     }
   }
 }

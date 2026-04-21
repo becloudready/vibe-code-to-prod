@@ -115,6 +115,30 @@ STUDENT_NAME=john-smith AWS_REGION=us-east-1 bash scripts/deploy.sh
 | 7 | Live API smoke test (GET + POST) |
 | 8 | Prints all URLs and resource details |
 
+### CI/CD with GitHub Actions
+
+The repo includes `.github/workflows/deploy-url-bookmark-saver.yml`.
+
+| Trigger | Behaviour |
+|------|--------|
+| Pull request touching `projects/03-url-bookmark-saver/**` | Builds backend + frontend and checks Terraform formatting |
+| Push to `main` touching `projects/03-url-bookmark-saver/**` | Builds, deploys to AWS, and publishes URLs in the workflow summary |
+| Manual `workflow_dispatch` | Re-runs deployment on demand |
+
+Configure these GitHub repo settings before deploying:
+
+| Type | Name | Purpose |
+|------|------|---------|
+| Variable | `URL_BOOKMARK_SAVER_STUDENT_NAME` | Required deployment suffix, e.g. `john-smith` |
+| Variable | `URL_BOOKMARK_SAVER_AWS_REGION` | Optional AWS region, defaults to `us-east-1` |
+| Variable | `URL_BOOKMARK_SAVER_SEED_DEMO_DATA` | Optional, defaults to `true` |
+| Variable | `URL_BOOKMARK_SAVER_DEMO_SEED_COUNT` | Optional, defaults to `18` |
+| Variable | `URL_BOOKMARK_SAVER_AWS_ROLE_ARN` | Preferred GitHub OIDC role ARN |
+| Secret | `AWS_ACCESS_KEY_ID` | Fallback if not using OIDC |
+| Secret | `AWS_SECRET_ACCESS_KEY` | Fallback if not using OIDC |
+
+The workflow prefers OIDC when `URL_BOOKMARK_SAVER_AWS_ROLE_ARN` is set. Otherwise it falls back to classic AWS access keys.
+
 ### Expected output after deployment
 
 ```
@@ -155,6 +179,33 @@ The script will:
 
 ---
 
+## Demo Traffic and Dashboard
+
+The CloudWatch dashboard is now more demo-friendly and includes:
+
+- API request totals and HTTP error mix
+- Lambda invocations, errors, and duration
+- API Gateway latency plus 4XX and 5XX trends
+- Bookmark created, deleted, and fetched activity
+- DynamoDB read/write activity
+- A live table of recent Lambda log events
+
+To generate fresh activity for a class demo:
+
+```bash
+bash scripts/demo-load.sh --count 20 --include-errors
+```
+
+Or target a specific deployed API:
+
+```bash
+bash scripts/demo-load.sh --api-url https://abc123.execute-api.us-east-1.amazonaws.com --count 20 --include-errors
+```
+
+This script creates sample bookmarks, performs reads, deletes a couple of records, and intentionally triggers a few 4XX responses so the dashboard lights up quickly.
+
+---
+
 ## Project Structure
 
 ```
@@ -189,6 +240,7 @@ The script will:
 │   └── outputs.tf            # URLs, names, ARNs
 ├── scripts/
 │   ├── deploy.sh             # Full deploy pipeline
+│   ├── demo-load.sh          # Generates demo traffic + sample bookmarks
 │   └── destroy.sh            # Teardown
 └── README.md
 ```
@@ -247,13 +299,13 @@ Delete a bookmark by ID.
 ## Monitoring
 
 ### CloudWatch Dashboard
-After deployment, the dashboard URL is printed. It shows 6 widgets:
-- Lambda Invocations (sum/min)
-- Lambda Errors (sum/min)
-- Lambda Duration p99 (ms)
-- API Gateway Latency p99 (ms)
-- API Gateway 4XX errors
-- API Gateway 5XX errors
+After deployment, the dashboard URL is printed. It now shows both platform health and app activity:
+- API request totals and error mix
+- Lambda invocations, errors, and p99 duration
+- API Gateway latency plus 4XX/5XX trends
+- Bookmark created, deleted, and fetched activity
+- DynamoDB read/write activity
+- Recent structured Lambda events in a logs table
 
 ### Structured Logs
 Every Lambda invocation emits a structured JSON log line:

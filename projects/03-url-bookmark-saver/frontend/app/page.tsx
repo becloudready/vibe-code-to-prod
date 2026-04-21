@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
-import FeaturesSection from '@/components/FeaturesSection';
-import HowItWorksSection from '@/components/HowItWorksSection';
 import ArchitectureSection from '@/components/ArchitectureSection';
 import AddBookmarkForm from '@/components/AddBookmarkForm';
 import BookmarkCard from '@/components/BookmarkCard';
@@ -101,10 +99,6 @@ export default function Home() {
       <Navbar onGetStarted={scrollToApp} />
 
       <HeroSection onGetStarted={scrollToApp} />
-
-      <FeaturesSection />
-
-      <HowItWorksSection />
 
       <ArchitectureSection />
 
