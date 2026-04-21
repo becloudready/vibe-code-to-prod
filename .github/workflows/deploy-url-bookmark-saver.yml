@@ -56,8 +56,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: npm
-          cache-dependency-path: projects/03-url-bookmark-saver/frontend/package-lock.json
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -94,10 +92,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: npm
-          cache-dependency-path: |
-            projects/03-url-bookmark-saver/backend/package-lock.json
-            projects/03-url-bookmark-saver/frontend/package-lock.json
 
       - name: Install backend dependencies
         working-directory: ${{ env.PROJECT_DIR }}/backend
@@ -137,10 +131,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: npm
-          cache-dependency-path: |
-            projects/03-url-bookmark-saver/backend/package-lock.json
-            projects/03-url-bookmark-saver/frontend/package-lock.json
 
       # ── Dependency vulnerability audit ──────────────────────────────────────
       - name: npm audit — backend
@@ -211,10 +201,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: npm
-          cache-dependency-path: |
-            projects/03-url-bookmark-saver/backend/package-lock.json
-            projects/03-url-bookmark-saver/frontend/package-lock.json
 
       - uses: hashicorp/setup-terraform@v3
         with:
