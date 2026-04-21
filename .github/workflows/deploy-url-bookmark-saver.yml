@@ -75,6 +75,7 @@ jobs:
       - name: Terraform validate
         working-directory: ${{ env.PROJECT_DIR }}/terraform
         run: |
+          echo "placeholder" | zip -q ../backend/lambda.zip -
           terraform init -backend=false
           terraform validate
 
