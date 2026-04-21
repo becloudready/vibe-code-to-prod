@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ────────────────────────────────────────────────── */
+:root {
+  --indigo: #6366f1;
+  --violet: #8b5cf6;
+  --hero-bg: #09090b;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #ffffff;
+  color: #09090b;
+}
+
+/* ── Hero grid pattern ───────────────────────────────────── */
+.hero-grid {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* ── Gradient text ───────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-warm {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Travelling dot animation (architecture diagram) ─────── */
+@keyframes travelDot {
+  0%   { left: 0%;   opacity: 0; }
+  10%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: 90%;  opacity: 0; }
+}
+.animate-travel-0 { animation: travelDot 1.8s ease-in-out 0.0s infinite; }
+.animate-travel-1 { animation: travelDot 1.8s ease-in-out 0.4s infinite; }
+.animate-travel-2 { animation: travelDot 1.8s ease-in-out 0.8s infinite; }
+.animate-travel-3 { animation: travelDot 1.8s ease-in-out 1.2s infinite; }
+
+/* ── Glow orb ────────────────────────────────────────────── */
+.hero-orb {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.10) 40%, transparent 70%);
+  pointer-events: none;
+  filter: blur(1px);
+}
+
+/* ── Component classes ───────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white
+           bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700
+           transition-all duration-150 shadow-sm hover:shadow-indigo-500/25 hover:shadow-lg
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary-dark {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white
+           bg-indigo-600 hover:bg-indigo-500
+           transition-all duration-150 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost-dark {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium
+           text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold
+           text-zinc-700 bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50
+           transition-all duration-150 shadow-sm
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger-icon {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-lg
+           text-zinc-400 hover:text-red-500 hover:bg-red-50
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1;
+  }
+
+  .input-field {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-zinc-200 bg-white
+           text-sm text-zinc-900 placeholder-zinc-400
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+           transition-all duration-150;
+  }
+
+  .input-field.error {
+    @apply border-red-400 focus:ring-red-400 focus:border-red-400;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl border border-zinc-100 shadow-sm
+           hover:shadow-md hover:-translate-y-0.5
+           transition-all duration-200 ease-out;
+  }
+
+  .section-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}

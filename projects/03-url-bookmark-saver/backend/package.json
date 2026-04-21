@@ -1,0 +1,11 @@
+{
+  "name": "stash-api",
+  "version": "1.0.0",
+  "description": "URL Bookmark Saver — Lambda API",
+  "main": "src/handler.js",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "uuid": "^9.0.0"
+  }
+}
