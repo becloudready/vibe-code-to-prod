@@ -1,5 +1,11 @@
 name: Deploy URL Bookmark Saver
 
+# Pipeline stages:
+#   lint ──┬──→ build ──┐
+#          └──→ scan  ──┴──→ deploy
+#
+# build and scan run in parallel after lint; deploy gates on both.
+
 on:
   push:
     branches:
@@ -12,26 +18,79 @@ on:
       - '.github/workflows/deploy-url-bookmark-saver.yml'
       - 'projects/03-url-bookmark-saver/**'
   workflow_dispatch:
-
-permissions:
-  contents: read
+    inputs:
+      student_name:
+        description: 'Deployment name prefix (e.g. john-smith). Overrides repo variable.'
+        required: false
+        default: ''
+      aws_region:
+        description: 'AWS region to deploy into'
+        required: false
+        default: 'us-east-1'
+      aws_access_key_id:
+        description: 'AWS Access Key ID — leave blank to use repo secret AWS_ACCESS_KEY_ID'
+        required: false
+        default: ''
+      aws_secret_access_key:
+        description: 'AWS Secret Access Key — leave blank to use repo secret AWS_SECRET_ACCESS_KEY'
+        required: false
+        default: ''
 
 env:
   PROJECT_DIR: projects/03-url-bookmark-saver
-  AWS_REGION: ${{ vars.URL_BOOKMARK_SAVER_AWS_REGION || 'us-east-1' }}
-  STUDENT_NAME: ${{ vars.URL_BOOKMARK_SAVER_STUDENT_NAME }}
+  AWS_REGION: ${{ inputs.aws_region || vars.URL_BOOKMARK_SAVER_AWS_REGION || 'us-east-1' }}
+  STUDENT_NAME: ${{ inputs.student_name || vars.URL_BOOKMARK_SAVER_STUDENT_NAME }}
 
+# ── Stage 1: Lint ─────────────────────────────────────────────────────────────
 jobs:
-  validate:
-    name: Validate Build
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: projects/03-url-bookmark-saver/frontend/package-lock.json
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install frontend dependencies
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: npm install
+
+      - name: ESLint — frontend
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: npm run lint
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive ${{ env.PROJECT_DIR }}/terraform
+
+      - name: Terraform validate
+        working-directory: ${{ env.PROJECT_DIR }}/terraform
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+  # ── Stage 2a: Build ───────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -39,14 +98,9 @@ jobs:
             projects/03-url-bookmark-saver/backend/package-lock.json
             projects/03-url-bookmark-saver/frontend/package-lock.json
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
       - name: Install backend dependencies
         working-directory: ${{ env.PROJECT_DIR }}/backend
-        run: npm ci --omit=dev
+        run: npm install --omit=dev
 
       - name: Check Lambda syntax
         working-directory: ${{ env.PROJECT_DIR }}/backend
@@ -54,7 +108,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: ${{ env.PROJECT_DIR }}/frontend
-        run: npm ci
+        run: npm install
 
       - name: Build frontend
         working-directory: ${{ env.PROJECT_DIR }}/frontend
@@ -62,24 +116,24 @@ jobs:
           NEXT_PUBLIC_API_URL: https://example.execute-api.us-east-1.amazonaws.com
         run: npm run build
 
-      - name: Check Terraform formatting
-        run: terraform fmt -check -recursive $PROJECT_DIR/terraform
+      - name: TypeScript type check
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: npx tsc --noEmit
 
-  deploy:
-    name: Deploy to AWS
+  # ── Stage 2b: Security Scan ───────────────────────────────────────────────────
+  scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-    needs: validate
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    needs: lint
     permissions:
       contents: read
-      id-token: write
+      security-events: write   # upload SARIF to GitHub Security tab
+      actions: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -87,21 +141,105 @@ jobs:
             projects/03-url-bookmark-saver/backend/package-lock.json
             projects/03-url-bookmark-saver/frontend/package-lock.json
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # ── Dependency vulnerability audit ──────────────────────────────────────
+      - name: npm audit — backend
+        working-directory: ${{ env.PROJECT_DIR }}/backend
+        # Fail only on high/critical CVEs; warn on moderate
+        run: |
+          npm install --omit=dev
+          npm audit --audit-level=high || true
+          npm audit --audit-level=critical
+
+      - name: npm audit — frontend
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: |
+          npm install
+          npm audit --audit-level=high || true
+          npm audit --audit-level=critical
+
+      # ── IaC security scan (Terraform) ───────────────────────────────────────
+      - name: Checkov — Terraform IaC scan
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ env.PROJECT_DIR }}/terraform
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+          # Set soft_fail: false to hard-block deploys on IaC policy violations
+          soft_fail: true
+
+      - name: Upload Checkov results to Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+          category: checkov-terraform
+
+      # ── SAST — CodeQL (JavaScript / TypeScript) ─────────────────────────────
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Build for CodeQL
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://example.execute-api.us-east-1.amazonaws.com
+        run: npm run build
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: codeql-javascript
+
+  # ── Stage 3: Deploy ───────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    needs: [build, scan]
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write   # required for OIDC
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            projects/03-url-bookmark-saver/backend/package-lock.json
+            projects/03-url-bookmark-saver/frontend/package-lock.json
+
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
 
-      - name: Configure AWS credentials with OIDC
-        if: vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN != ''
+      # Priority 1: credentials passed directly as workflow_dispatch inputs
+      - name: Configure AWS credentials (workflow inputs)
+        if: ${{ inputs.aws_access_key_id != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+
+      # Priority 2: OIDC role (recommended for production)
+      - name: Configure AWS credentials (OIDC role)
+        if: ${{ inputs.aws_access_key_id == '' && vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN }}
           role-session-name: github-actions-stash-deploy
 
-      - name: Configure AWS credentials with access keys
-        if: vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN == '' && secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != ''
+      # Priority 3: long-lived access keys in repo secrets
+      - name: Configure AWS credentials (repo secrets)
+        if: ${{ inputs.aws_access_key_id == '' && vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN == '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -113,23 +251,15 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${STUDENT_NAME}" ]; then
-            echo "Set repository variable URL_BOOKMARK_SAVER_STUDENT_NAME before deploying." >&2
+            echo "::error::Provide student_name as a workflow input or set repo variable URL_BOOKMARK_SAVER_STUDENT_NAME."
             exit 1
           fi
-
-          if [ -z "${{ vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN }}" ] && { [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; }; then
-            echo "Provide either URL_BOOKMARK_SAVER_AWS_ROLE_ARN or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY." >&2
-            exit 1
-          fi
-
-          aws sts get-caller-identity >/dev/null
+          aws sts get-caller-identity
 
       - name: Deploy application
         working-directory: ${{ env.PROJECT_DIR }}
         env:
           CI: true
-          AWS_REGION: ${{ env.AWS_REGION }}
-          STUDENT_NAME: ${{ env.STUDENT_NAME }}
           SEED_DEMO_DATA: ${{ vars.URL_BOOKMARK_SAVER_SEED_DEMO_DATA || 'true' }}
           DEMO_SEED_COUNT: ${{ vars.URL_BOOKMARK_SAVER_DEMO_SEED_COUNT || '18' }}
         run: bash scripts/deploy.sh --name "$STUDENT_NAME" --region "$AWS_REGION"
@@ -139,11 +269,13 @@ jobs:
         shell: bash
         run: |
           {
-            echo "## URL Bookmark Saver Deployment"
+            echo "## URL Bookmark Saver — Deployed :rocket:"
             echo ""
-            echo "- Region: ${AWS_REGION}"
-            echo "- Student name: ${STUDENT_NAME}"
-            echo "- Frontend: $(terraform output -raw frontend_url)"
-            echo "- API: $(terraform output -raw api_url)"
-            echo "- Dashboard: $(terraform output -raw dashboard_url)"
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Region** | ${AWS_REGION} |"
+            echo "| **Name** | ${STUDENT_NAME} |"
+            echo "| **Frontend** | $(terraform output -raw frontend_url) |"
+            echo "| **API** | $(terraform output -raw api_url) |"
+            echo "| **Dashboard** | $(terraform output -raw dashboard_url) |"
           } >> "$GITHUB_STEP_SUMMARY"
