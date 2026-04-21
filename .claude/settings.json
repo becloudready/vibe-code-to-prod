@@ -2,6 +2,9 @@
   "permissions": {
     "additionalDirectories": [
       "/Users/chandan/workspace/mcq-quiz"
+    ],
+    "allow": [
+      "WebSearch"
     ]
   }
 }

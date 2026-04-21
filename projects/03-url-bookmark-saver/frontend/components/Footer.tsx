@@ -55,6 +55,15 @@ export default function Footer() {
             </span>
           </div>
         </div>
+
+        <div className="mt-4 text-center text-xs text-zinc-600">
+          Built with ❤️ by{' '}
+          <a href="https://becloudready.com/" target="_blank" rel="noopener noreferrer"
+             className="text-zinc-400 hover:text-white transition-colors font-medium">
+            beCloudReady
+          </a>
+          {' '}· Toronto
+        </div>
       </div>
     </footer>
   );

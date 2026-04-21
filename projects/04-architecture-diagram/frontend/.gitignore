@@ -1,0 +1,6 @@
+# generated at install time — platform-specific binaries cause cross-platform lock file corruption
+package-lock.json
+
+.next/
+out/
+node_modules/
