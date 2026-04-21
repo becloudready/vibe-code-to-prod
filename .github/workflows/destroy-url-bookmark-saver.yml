@@ -89,6 +89,10 @@ jobs:
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
+      - name: Create placeholder lambda.zip
+        run: |
+          echo "placeholder" | zip -q ${{ env.PROJECT_DIR }}/backend/lambda.zip -
+
       - name: Terraform init (dry-run validate)
         working-directory: ${{ env.PROJECT_DIR }}/terraform
         run: |
@@ -148,6 +152,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Create placeholder lambda.zip
+        run: |
+          echo "placeholder" | zip -q ${{ env.PROJECT_DIR }}/backend/lambda.zip -
 
       - name: Terraform init
         working-directory: ${{ env.PROJECT_DIR }}/terraform
