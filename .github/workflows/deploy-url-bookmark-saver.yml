@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 25
           cache: npm
           cache-dependency-path: projects/03-url-bookmark-saver/frontend/package-lock.json
 
@@ -93,7 +93,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 25
           cache: npm
           cache-dependency-path: |
             projects/03-url-bookmark-saver/backend/package-lock.json
@@ -136,7 +136,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 25
           cache: npm
           cache-dependency-path: |
             projects/03-url-bookmark-saver/backend/package-lock.json
@@ -210,7 +210,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 25
           cache: npm
           cache-dependency-path: |
             projects/03-url-bookmark-saver/backend/package-lock.json
@@ -220,32 +220,13 @@ jobs:
         with:
           terraform_wrapper: false
 
-      # Priority 1: credentials passed directly as workflow_dispatch inputs
-      - name: Configure AWS credentials (workflow inputs)
-        if: ${{ inputs.aws_access_key_id != '' }}
+      # Inputs (workflow_dispatch) take priority; falls back to repo secrets for push-triggered runs
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          aws-access-key-id: ${{ inputs.aws_access_key_id }}
-          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
-
-      # Priority 2: OIDC role (recommended for production)
-      - name: Configure AWS credentials (OIDC role)
-        if: ${{ inputs.aws_access_key_id == '' && vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN }}
-          role-session-name: github-actions-stash-deploy
-
-      # Priority 3: long-lived access keys in repo secrets
-      - name: Configure AWS credentials (repo secrets)
-        if: ${{ inputs.aws_access_key_id == '' && vars.URL_BOOKMARK_SAVER_AWS_ROLE_ARN == '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ inputs.aws_access_key_id || secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key || secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Validate deployment settings
         shell: bash
