@@ -2,9 +2,9 @@ name: Deploy URL Bookmark Saver
 
 # Pipeline stages:
 #   lint ──┬──→ build ──┐
-#          └──→ scan  ──┴──→ deploy
+#          └──→ scan  ──┴──→ deploy ──→ seed
 #
-# build and scan run in parallel after lint; deploy gates on both.
+# build and scan run in parallel after lint; deploy gates on both; seed runs after deploy.
 
 on:
   push:
@@ -35,6 +35,14 @@ on:
         description: 'AWS Secret Access Key — leave blank to use repo secret AWS_SECRET_ACCESS_KEY'
         required: false
         default: ''
+      seed_demo_data:
+        description: 'Seed demo bookmarks after deploy (true/false)'
+        required: false
+        default: 'true'
+      seed_count:
+        description: 'Number of demo bookmarks to seed'
+        required: false
+        default: '12'
 
 env:
   PROJECT_DIR: projects/03-url-bookmark-saver
@@ -192,6 +200,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, scan]
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    outputs:
+      api_url: ${{ steps.capture_outputs.outputs.api_url }}
     permissions:
       contents: read
       id-token: write   # required for OIDC
@@ -229,9 +239,13 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         env:
           CI: true
-          SEED_DEMO_DATA: ${{ vars.URL_BOOKMARK_SAVER_SEED_DEMO_DATA || 'true' }}
-          DEMO_SEED_COUNT: ${{ vars.URL_BOOKMARK_SAVER_DEMO_SEED_COUNT || '18' }}
+          SEED_DEMO_DATA: 'false'   # seeding is handled by the dedicated seed stage
         run: bash scripts/deploy.sh --name "$STUDENT_NAME" --region "$AWS_REGION"
+
+      - name: Capture Terraform outputs
+        id: capture_outputs
+        working-directory: ${{ env.PROJECT_DIR }}/terraform
+        run: echo "api_url=$(terraform output -raw api_url)" >> "$GITHUB_OUTPUT"
 
       - name: Publish deployment summary
         working-directory: ${{ env.PROJECT_DIR }}/terraform
@@ -247,4 +261,42 @@ jobs:
             echo "| **Frontend** | $(terraform output -raw frontend_url) |"
             echo "| **API** | $(terraform output -raw api_url) |"
             echo "| **Dashboard** | $(terraform output -raw dashboard_url) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Stage 4: Seed Demo Data ───────────────────────────────────────────────────
+  seed:
+    name: Seed Demo Data
+    runs-on: ubuntu-latest
+    needs: deploy
+    # Skip if seed_demo_data input is explicitly 'false'; default is 'true'
+    if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && inputs.seed_demo_data != 'false'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Seed demo bookmarks
+        env:
+          API_URL: ${{ needs.deploy.outputs.api_url }}
+          COUNT: ${{ inputs.seed_count || vars.URL_BOOKMARK_SAVER_DEMO_SEED_COUNT || '12' }}
+        run: |
+          bash ${{ env.PROJECT_DIR }}/scripts/demo-load.sh \
+            --api-url "$API_URL" \
+            --count "$COUNT" \
+            --include-errors
+
+      - name: Publish seed summary
+        if: always()
+        env:
+          API_URL: ${{ needs.deploy.outputs.api_url }}
+          COUNT: ${{ inputs.seed_count || vars.URL_BOOKMARK_SAVER_DEMO_SEED_COUNT || '12' }}
+        shell: bash
+        run: |
+          {
+            echo "## Seed Demo Data"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **API** | ${API_URL} |"
+            echo "| **Bookmarks seeded** | ${COUNT} |"
+            echo "| **Status** | ${{ job.status }} |"
           } >> "$GITHUB_STEP_SUMMARY"
