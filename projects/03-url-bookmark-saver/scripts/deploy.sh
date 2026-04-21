@@ -105,7 +105,7 @@ ok "Frontend : $FRONTEND_URL"
 
 # ── Step 5: Build Next.js frontend ───────────────────────────
 log "Installing frontend dependencies..."
-(cd "$FRONTEND_DIR" && npm ci --silent)
+(cd "$FRONTEND_DIR" && npm install --silent)
 ok "Frontend packages ready"
 
 log "Building Next.js (static export)..."
