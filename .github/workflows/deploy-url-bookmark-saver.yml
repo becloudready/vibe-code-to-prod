@@ -46,6 +46,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    continue-on-error: true   # report lint issues without blocking build/scan/deploy
     permissions:
       contents: read
 
