@@ -7,17 +7,8 @@ Built with **Next.js + AWS Lambda + DynamoDB**, deployed via **Terraform**.
 
 ## Architecture
 
-```
-Browser (Next.js SPA)
-       │
-       │  HTTPS
-       ▼
-   S3 Static Website  ──  CloudFront (optional)
-       
-Browser → API Gateway (HTTP API) → Lambda (Node.js 20) → DynamoDB
-                                       │
-                               CloudWatch Logs + Dashboard
-```
+<img width="1087" height="285" alt="image" src="https://github.com/user-attachments/assets/10ccfbf1-52ad-4d74-b49e-c1bb137c98b6" />
+
 
 | Layer       | Technology                        |
 |-------------|-----------------------------------|
